@@ -68,7 +68,7 @@ typedef enum {
 } TokenType;
 
 typedef struct {
-    File *file;         // File information
+    File *source;       // Source information
     TokenType type;     // Token kind
     const char *start;  // Where the token starts
     size_t length;      // How much length on starts

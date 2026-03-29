@@ -154,6 +154,23 @@ Token *lex_number(Lexer *l)
     return make_token(l, TOK_INT_LIT, start, (size_t)((l->source->content + l->pos) - start));
 }
 
+Token *lex_string(Lexer *l)
+{
+    advance(l); // skip opening "
+    const char *start = l->source->content + l->pos;
+
+    while (l->pos < l->source->length) {
+        if (peek(l) == '"') {
+            advance(l); // skip closing "
+            // ignore closing "
+            return make_token(l, TOK_STR_LIT, start, (size_t)((l->source->content + l->pos) - start) - 1);
+        }
+        advance(l);
+    }
+
+    error_at(l, start, "Unterminated string literal");
+}
+
 Token *lex_next(Lexer *l)
 {
     skip_whitespace(l);
