@@ -187,6 +187,16 @@ Token *lex_next(Lexer *l)
         return make_token(l, TOK_RBRACKET, start, 1);
     case ',':
         return make_token(l, TOK_COMMA, start, 1);
+    case '+':
+        return make_token(l, TOK_PLUS, start, 1);
+    case '-':
+        return make_token(l, TOK_MINUS, start, 1);
+    case '*':
+        return make_token(l, TOK_STAR, start, 1);
+    case '/':
+        return make_token(l, TOK_SLASH, start, 1);
+    case '%':
+        return make_token(l, TOK_PERCENT, start, 1);
     }
 
     error_at(l, l->source->content + l->pos, "Unexpected character");

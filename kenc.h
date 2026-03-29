@@ -59,6 +59,9 @@ typedef enum {
     TOK_RPAREN, // )
     TOK_LBRACE, // {
     TOK_RBRACE, // }
+    TOK_LBRACKET, // [
+    TOK_RBRACKET, // ]
+    TOK_COMMA, // ,
     
     // End of file
     TOK_EOF,
