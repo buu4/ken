@@ -142,7 +142,7 @@ Token *lex_number(Lexer *l)
 {
     const char *start = l->source->content + l->pos;
 
-    while (isdigit(peek(l))) {
+    while (isdigit(peek(l)) || (peek(l) == '_' && isdigit(peek_next(l)))) {
         advance(l);
     }
 
