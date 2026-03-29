@@ -145,6 +145,11 @@ Token *lex_number(Lexer *l)
     while (isdigit(peek(l)) || (peek(l) == '_' && isdigit(peek_next(l)))) {
         advance(l);
     }
+    // Check float
+    for (const char *p = start; p < (l->source->content + l->pos); p++) {
+        if (*p == '.')
+            return make_token(l, TOK_FLOAT_LIT, start, (size_t)((l->source->content + l->pos) - start));
+    }
 
     return make_token(l, TOK_INT_LIT, start, (size_t)((l->source->content + l->pos) - start));
 }
