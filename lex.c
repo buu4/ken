@@ -140,7 +140,13 @@ static void skip_whitespace(Lexer *l)
 
 Token *lex_number(Lexer *l)
 {
+    const char *start = l->source->content + l->pos;
 
+    while (isdigit(peek(l))) {
+        advance(l);
+    }
+
+    return make_token(l, TOK_INT_LIT, start, (size_t)((l->source->content + l->pos) - start));
 }
 
 Token *lex_next(Lexer *l)
