@@ -138,7 +138,7 @@ static void skip_whitespace(Lexer *l)
     }
 }
 
-Token *lex_number(Lexer *l)
+static Token *lex_number(Lexer *l)
 {
     const char *start = l->source->content + l->pos;
 
@@ -154,7 +154,7 @@ Token *lex_number(Lexer *l)
     return make_token(l, TOK_INT_LIT, start, (size_t)((l->source->content + l->pos) - start));
 }
 
-Token *lex_string(Lexer *l)
+static Token *lex_string(Lexer *l)
 {
     advance(l); // skip opening "
     const char *start = l->source->content + l->pos;
@@ -169,6 +169,41 @@ Token *lex_string(Lexer *l)
     }
 
     error_at(l, start, "Unterminated string literal");
+}
+
+static void *check_kw(const char *name, size_t len)
+{
+    static HashMap map;
+
+    if (map.capacity == 0) {
+        typedef struct {
+            const char *kw;
+            size_t kw_len;
+            TokenType type;
+        } kwMap;
+        static kwMap kw[] = {
+            {"let", 3, TOK_LET},    {"mut", 3. TOK_MUT},
+            {"func", 4, TOK_FUNC}.
+        };
+
+        for (size_t i = 0; i < sizeof(kw) / sizeof(*kw); i++)
+            hashmap_put2(&map, kw[i].kw, kw[i].kw_len, (void*)kw[i]);
+    }
+
+    return hashmap_get2(&map, name, len);
+}
+
+static Token *lex_ident(Lexer *l)
+{
+    const char *start = l->source->content + l->pos;
+    while (isalnum(peek(l)) || peek(l) == '_')
+        advance(l);
+
+    size_t len = (size_t)((l->source->content + l->pos) - start);
+    void *kw = check_kw(start, len)
+    TokenType type = kw != NULL ? (TokenType)kw.type : TOK_IDENT;
+
+    return make_token(l, type, start, len);
 }
 
 Token *lex_next(Lexer *l)
