@@ -2,7 +2,7 @@
 #define _KEN_COMPILER_H
 
 #ifndef _WIN32
-#define _POSIX_C_SOURCE 200809L
+# define _POSIX_C_SOURCE 200809L
 #endif
 
 #include <assert.h>
@@ -84,6 +84,9 @@ typedef struct {
 // Functions
 noreturn void error(const char *fmt, ...);
 void error_tok(Token *tok, const char *fmt, ...); // Multi, no die.
+
+#define unreachable() \
+  error("internal error at %s:%d", __FILE__, __LINE__)
 
 void lex_init(Lexer *l, const char *source, size_t len);
 Token *lex_next(Lexer *l);
