@@ -13,15 +13,31 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <ctype.h>
+#include <string.h>
+#include <errno.h>
 
 #define noreturn _Noreturn
 
+noreturn void error(const char *fmt, ...);
+void error_tok(Token *tok, const char *fmt, ...); // Multi, no die.
+
+#define unreachable() \
+  error("internal error at %s:%d", __FILE__, __LINE__)
+
+//
+// file.c
+//
+
 typedef struct {
-    FILE *fd;               // file descriptor
+    FILE *d;                // file descriptor
     const char *name;       // origin name
     const char *content;    // origin
     size_t length;          // origin length
 } File;
+
+// Functions
+void file_init(File *file, const char *path);
+void file_close(File *file);
 
 //
 // lex.c
@@ -82,12 +98,6 @@ typedef struct {
 } Lexer;
 
 // Functions
-noreturn void error(const char *fmt, ...);
-void error_tok(Token *tok, const char *fmt, ...); // Multi, no die.
-
-#define unreachable() \
-  error("internal error at %s:%d", __FILE__, __LINE__)
-
 void lex_init(Lexer *l, const char *source, size_t len);
 Token *lex_next(Lexer *l);
 // Tokenize Lexer and return list of token & token count
