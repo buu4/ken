@@ -7,17 +7,19 @@ The purpose of creating Ken is to code simple but fast like C & Safe like rust (
 
 example code
 ------------
-* Hello world:
-    func main() -> void {
-        let a = "Hello, World!";
-        println!(a);
-    }
 
-* String Interpolation:
-    func greet(name: str) -> void {
-        println!("Hello {name}!");
-    }
+Hello world:
+  func main() -> void {
+      let a = "Hello, World!";
+      println!(a);
+  }
+
+String Interpolation:
+  func greet(name: str) -> void {
+      println!("Hello {name}!");
+  }
 
 Status
 ======
+
 Work in progress. Things will break.
