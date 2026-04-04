@@ -18,7 +18,7 @@ static void verror_tok(Token *tok, const char *fmt, va_list ap)
     fprintf(stderr, "%5s |     ", " ");
     // Print carret with token length
     fprintf(stderr, "%.*s", tok->col - 1, " "); // width
-    fprintf(stderr, "%.*s\n", tok->length, "^");
+    fprintf(stderr, "%.*s\n", (int)tok->length, "^");
 }
 
 static void verror_at(File *source, int line_no, const char *loc, const char *fmt,
@@ -291,7 +291,7 @@ Token *lex_tokenize(Lexer *l, int *count)
 void print_tokens(Token *tokens, int count)
 {
     for (int i = 0; i < count; i++) {
-        printf("  %-5s     %.*s\n", token_type_name(tokens[i].type), tokens[i].length,
+        printf("  %-5s     %.*s\n", token_type_name(tokens[i].type), (int)tokens[i].length,
             tokens[i].start);
     }
 }
