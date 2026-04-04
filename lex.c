@@ -1,4 +1,4 @@
-#include "kenc.h"
+#include "ken.h"
 
 // print with the following format
 // file.zd:10:10: <error message here>

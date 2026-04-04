@@ -1,4 +1,4 @@
-#include "kenc.h"
+#include "ken.h"
 
 void file_init(File *file, char *path)
 {

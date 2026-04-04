@@ -2,7 +2,7 @@
 // Modified by Bayu Setiawan (2026). Used in this project.
 //      https://github.com/buu4/ken
 
-#include "kenc.h"
+#include "ken.h"
 
 // Initial hash bucket size
 #define INIT_SIZE 16

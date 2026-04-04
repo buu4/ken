@@ -1,4 +1,4 @@
-#include "kenc.h"
+#include "ken.h"
 
 int main(int argc, char **argv)
 {
