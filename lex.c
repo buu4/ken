@@ -290,8 +290,13 @@ Token *lex_tokenize(Lexer *l, int *count)
 #ifndef NDEBUG
 void print_tokens(Token *tokens, int count)
 {
+    int top_line = 1; // biggest line
     for (int i = 0; i < count; i++) {
-        printf("  %-5s     %.*s\n", token_type_name(tokens[i].type), (int)tokens[i].length,
+        if (tokens[i].line > top_line) {
+            top_line = tokens[i].line;
+            printf("%s:%d\n", tokens[i].source->name, top_line);
+        }
+        printf("  %-12s '%.*s'\n", token_type_name(tokens[i].type), (int)tokens[i].length,
             tokens[i].start);
     }
 }
