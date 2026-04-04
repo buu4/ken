@@ -19,7 +19,6 @@
 #define noreturn _Noreturn
 
 noreturn void error(const char *fmt, ...);
-void error_tok(Token *tok, const char *fmt, ...); // Multi, no die.
 
 #define unreachable() \
   error("internal error at %s:%d", __FILE__, __LINE__)
@@ -29,14 +28,14 @@ void error_tok(Token *tok, const char *fmt, ...); // Multi, no die.
 //
 
 typedef struct {
-    FILE *d;                // file descriptor
-    const char *name;       // origin name
-    const char *content;    // origin
-    size_t length;          // origin length
+    FILE *d;        // file descriptor
+    char *name;
+    char *content;
+    size_t length;
 } File;
 
 // Functions
-void file_init(File *file, const char *path);
+void file_init(File *file, char *path);
 void file_close(File *file);
 
 //
@@ -81,6 +80,9 @@ typedef enum {
     
     // End of file
     TOK_EOF,
+
+    // Error
+    TOK_ERR,
 } TokenType;
 
 typedef struct {
@@ -98,11 +100,21 @@ typedef struct {
 } Lexer;
 
 // Functions
-void lex_init(Lexer *l, const char *source, size_t len);
-Token *lex_next(Lexer *l);
+void error_tok(Token *tok, const char *fmt, ...); // Multi, no die.
+
+void lex_init(Lexer *l, File *file);
+Token lex_next(Lexer *l);
+
 // Tokenize Lexer and return list of token & token count
 Token *lex_tokenize(Lexer *l, int *count);
+// return the string name of token type
 const char *token_type_name(TokenType type);
+// debug functions for lexer
+#ifndef NDEBUG
+void print_tokens(Token *tokens, int count);
+# else
+#  define print_tokens(x, y)
+#endif
 
 //
 // hashmap.c

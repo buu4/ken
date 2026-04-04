@@ -1,6 +1,6 @@
 #include "kenc.h"
 
-void file_init(File *file, const char *path)
+void file_init(File *file, char *path)
 {
     file->name = path;
 
@@ -10,7 +10,7 @@ void file_init(File *file, const char *path)
         goto err;
 
     fseek(file->d, 0L, SEEK_END); // jump to end buffer
-    file->length = (size_t)fteel(file->d);
+    file->length = (size_t)ftell(file->d);
     fseek(file->d, 0L, SEEK_SET); // jump to start buffer
 
     file->content = malloc(file->length + 1);
