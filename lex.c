@@ -1,24 +1,32 @@
 #include "ken.h"
 
 // print with the following format
-// file.zd:10:10: <error message here>
-//   10  |    func main(
-//       |             ^
+// file.ken:10:10: <error message here>
+//    10 |     func main(
+//       |          ^^^^
 static void verror_tok(Token *tok, const char *fmt, va_list ap)
 {
+    // the end of line context
+    const char *end = tok->start;
+    while (*end && *end != '\n')
+        end++;
+
     // Print filename:line:col: <msg>
     fprintf(stderr, "%s:%d:%d: ", tok->source->name, tok->line, tok->col);
     vfprintf(stderr, fmt, ap);
     fprintf(stderr, "\n");
 
     // Print format
-    //  <ln>  |   <line>
-    //        |   ^
-    fprintf(stderr, "%5d |     %s\n", tok->line, tok->start);
+    fprintf(stderr, "%5d |     %.*s\n", tok->line, (int)(end - tok->start),
+        tok->start);
     fprintf(stderr, "%5s |     ", " ");
     // Print carret with token length
-    fprintf(stderr, "%.*s", tok->col - 1, " "); // width
-    fprintf(stderr, "%.*s\n", (int)tok->length, "^");
+    for (int i = 1; i < tok->col; i++)
+        fprintf(stderr, " ");
+    for (int i = 0; i < tok->length; i++)
+        fprintf(stderr, "^");
+
+    fprintf(stderr, "\n");
 }
 
 static void verror_at(File *source, int line_no, const char *loc, const char *fmt,
@@ -29,8 +37,9 @@ static void verror_at(File *source, int line_no, const char *loc, const char *fm
     while (source->content < line && line[-1] != '\n')
         line--;
 
+    // Gather end of start
     const char *end = loc;
-    while (*end && *end == '\n')
+    while (*end && *end != '\n')
         end++;
 
     char start[(size_t)(end - line)];
@@ -44,7 +53,7 @@ static void verror_at(File *source, int line_no, const char *loc, const char *fm
         .start = start,
         .length = 1,
         .line = line_no,
-        .col = (int)(loc - line) + 1,
+        .col = (int)(loc - line),
     };
     verror_tok(&char_tok, fmt, ap);
 }
@@ -59,26 +68,34 @@ void error(const char *fmt, ...)
 }
 
 noreturn static void error_at(Lexer *l, const char *loc, const char *fmt, ...)
-{ int line_no = 1;
+{
+    int line = 1;
     for (char *p = l->source->content; p < loc; p++)
         if (*p == '\n')
-            line_no++;
+            line++;
 
     va_list ap;
     va_start(ap, fmt);
-    verror_at(l->source, line_no, loc, fmt, ap);
+    verror_at(l->source, line, loc, fmt, ap);
     exit(1);
 }
 
 static Token make_token(Lexer *l, TokenType type, const char *start, size_t len)
 {
+    int line = 1;
+    const char *p;
+
+    for (p = l->source->content; p < start; p++)
+        if (*p == '\n')
+            line++;
+
     return (Token){
         .source = l->source,
         .type = type,
         .start = start,
         .length = len,
-        .line = l->line,
-        .col = l->col,
+        .line = line,
+        .col = (int)(p - start),
      };
 }
 
@@ -259,8 +276,8 @@ void lex_init(Lexer *l, File *file)
 {
     l->source = file;
     l->pos = 0;
-    l->line = 0;
-    l->col = 0;
+    l->line = 1;
+    l->col = 1;
 }
 
 Token *lex_tokenize(Lexer *l, int *count)
