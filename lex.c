@@ -201,7 +201,9 @@ static void *check_kw(char *name, size_t len)
     if (map.capacity == 0) {
         static kwMap kw[] = {
             {"let", 3, TOK_LET},    {"mut", 3, TOK_MUT},
-            {"func", 4, TOK_FUNC},
+            {"func", 4, TOK_FUNC},  {"uint", 4, TOK_UINT},
+            {"int", 3, TOK_INT},    {"float", 5, TOK_FLOAT},
+            {"bool", 4, TOK_BOOL},  {"str", 3, TOK_STR},
         };
 
         for (size_t i = 0; i < sizeof(kw) / sizeof(*kw); i++)
@@ -331,7 +333,6 @@ const char *token_type_name(TokenType type) {
     case TOK_UINT: return "UINT";
     case TOK_INT: return "INT";
     case TOK_FLOAT: return "FLOAT";
-    case TOK_VOID: return "VOID";
     case TOK_BOOL: return "BOOL";
     case TOK_STR: return "STR";
     case TOK_PLUS: return "PLUS";
@@ -343,8 +344,11 @@ const char *token_type_name(TokenType type) {
     case TOK_RPAREN: return "RPAREN";
     case TOK_LBRACE: return "LBRACE";
     case TOK_RBRACE: return "RBRACE";
+    case TOK_LBRACKET: return "LBRACE";
+    case TOK_RBRACKET: return "RBRACE";
+    case TOK_COMMA: return "COMMA";
     case TOK_EOF: return "EOF";
     case TOK_ERR: return "ERR";
-    default: return "UNKNOWN";
     }
+    return "UNKNOWN";
 }

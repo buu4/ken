@@ -58,7 +58,6 @@ typedef enum {
     TOK_UINT,   // defaults to U64
     TOK_INT,    // defaults to I64
     TOK_FLOAT,
-    TOK_VOID,
     TOK_BOOL,
     TOK_STR,
 
