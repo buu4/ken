@@ -1,7 +1,9 @@
 #include "ken.h"
 
+public char *ken_progname = "ken";
+
 int main(int argc, char **argv)
-{
+{ ken_progname = argv[0];
     if (argc == 1) {
         error("error: input file required");
     }

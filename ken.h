@@ -22,6 +22,9 @@ noreturn void error(const char *fmt, ...);
 
 #define unreachable() \
   error("internal error at %s:%d", __FILE__, __LINE__)
+#define public // mark to indicate is defined as extern at first
+
+extern char *ken_progname;
 
 //
 // file.c
