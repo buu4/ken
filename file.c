@@ -22,7 +22,7 @@ void file_init(File *file, char *path)
     return;
 
 err:
-    error("error: %s: %s", strerror(errno));
+    error("error: %s: %s", file->name, strerror(errno));
     file_close(file);
 }
 
