@@ -1,13 +1,17 @@
 #include "ken.h"
 
-// print with the following format
-// file.ken:10:10: <error message here>
-//    10 |     func main(
-//       |          ^^^^
 static void verror_tok(Token *tok, const char *fmt, va_list ap)
-{
-    // the end of line context
-    const char *end = tok->start;
+{ // print with the following format
+  // file.ken:10:6: <error message here>
+  //    10 |     func main(
+  //       |          ^^^^
+
+    const char *start = tok->loc;
+    const char *end = tok->loc;
+
+    while (tok->source->content < start && start[-1] != '\n')
+        start--;
+
     while (*end && *end != '\n')
         end++;
 
@@ -16,9 +20,8 @@ static void verror_tok(Token *tok, const char *fmt, va_list ap)
     vfprintf(stderr, fmt, ap);
     fprintf(stderr, "\n");
 
-    // Print format
-    fprintf(stderr, "%5d |     %.*s\n", tok->line, (int)(end - tok->start),
-        tok->start);
+    // Print line context
+    fprintf(stderr, "%5d |     %.*s\n", tok->line, (int)(end - start), start);
     fprintf(stderr, "%5s |     ", " ");
     // Print carret with token length
     for (int i = 1; i < tok->col; i++)
@@ -29,31 +32,22 @@ static void verror_tok(Token *tok, const char *fmt, va_list ap)
     fprintf(stderr, "\n");
 }
 
-static void verror_at(File *source, int line_no, const char *loc, const char *fmt,
+static void verror_at(File *source, int line, const char *loc, const char *fmt,
                       va_list ap)
-{
-    // Gather start
-    const char *line = loc;
-    while (source->content < line && line[-1] != '\n')
-        line--;
+{ // print error when tokens are not ready yet
+  // specialy for character only
 
-    // Gather end of start
-    const char *end = loc;
-    while (*end && *end != '\n')
-        end++;
+    const char *start = loc;
+    while (source->content < start && start[-1] != '\n')
+        start--;
 
-    char start[(size_t)(end - line)];
-    memcpy(start, line, (size_t)(end - line));
-    start[(size_t)(end - line)] = '\0';
-
-    // print char token
     Token char_tok = (Token){
         .type = TOK_ERR,
         .source = source,
-        .start = start,
+        .loc = loc,
         .length = 1,
-        .line = line_no,
-        .col = (int)(loc - line),
+        .line = line,
+        .col = (int)(loc - start) + 1,
     };
     verror_tok(&char_tok, fmt, ap);
 }
@@ -80,22 +74,26 @@ noreturn static void error_at(Lexer *l, const char *loc, const char *fmt, ...)
     exit(1);
 }
 
-static Token make_token(Lexer *l, TokenType type, const char *start, size_t len)
+static Token make_token(Lexer *l, TokenType type, const char *loc, size_t len)
 {
-    int line = 1;
+    int line_no = 1;
     const char *p;
+    const char *start = loc;
 
-    for (p = l->source->content; p < start; p++)
+    while (l->source->content < start && start[-1] != '\n')
+        start--;
+
+    for (p = l->source->content; p < loc; p++)
         if (*p == '\n')
-            line++;
+            line_no++;
 
     return (Token){
         .source = l->source,
         .type = type,
-        .start = start,
+        .loc = loc,
         .length = len,
-        .line = line,
-        .col = (int)(p - start),
+        .line = line_no,
+        .col = (int)(loc - start) + 1,
      };
 }
 
@@ -157,35 +155,35 @@ static void skip_whitespace(Lexer *l)
 
 static Token lex_number(Lexer *l)
 {
-    const char *start = l->source->content + l->pos;
+    const char *loc = l->source->content + l->pos;
 
     while (isdigit(peek(l)) || (peek(l) == '_' && isdigit(peek_next(l)))) {
         advance(l);
     }
     // Check float
-    for (const char *p = start; p < (l->source->content + l->pos); p++) {
+    for (const char *p = loc; p < (l->source->content + l->pos); p++) {
         if (*p == '.')
-            return make_token(l, TOK_FLOAT_LIT, start, (size_t)((l->source->content + l->pos) - start));
+            return make_token(l, TOK_FLOAT_LIT, loc, (size_t)((l->source->content + l->pos) - loc));
     }
 
-    return make_token(l, TOK_INT_LIT, start, (size_t)((l->source->content + l->pos) - start));
+    return make_token(l, TOK_INT_LIT, loc, (size_t)((l->source->content + l->pos) - loc));
 }
 
 static Token lex_string(Lexer *l)
 {
     advance(l); // skip opening "
-    const char *start = l->source->content + l->pos;
+    const char *loc = l->source->content + l->pos;
 
     while (l->pos < l->source->length) {
         if (peek(l) == '"') {
             advance(l); // skip closing "
             // ignore closing "
-            return make_token(l, TOK_STR_LIT, start, (size_t)((l->source->content + l->pos) - start) - 1);
+            return make_token(l, TOK_STR_LIT, loc, (size_t)((l->source->content + l->pos) - loc) - 1);
         }
         advance(l);
     }
 
-    error_at(l, start, "Unterminated string literal");
+    error_at(l, loc, "Unterminated string literal");
 }
 
 typedef struct {
@@ -215,15 +213,15 @@ static void *check_kw(char *name, size_t len)
 
 static Token lex_ident(Lexer *l)
 {
-    char *start = l->source->content + l->pos;
+    char *loc = l->source->content + l->pos;
     while (isalnum(peek(l)) || peek(l) == '_')
         advance(l);
 
-    size_t len = (size_t)((l->source->content + l->pos) - start);
-    kwMap *kw = (kwMap*)check_kw(start, len);
+    size_t len = (size_t)((l->source->content + l->pos) - loc);
+    kwMap *kw = (kwMap*)check_kw(loc, len);
     TokenType type = kw ? kw->type : TOK_IDENT;
 
-    return make_token(l, type, start, len);
+    return make_token(l, type, loc, len);
 }
 
 Token lex_next(Lexer *l)
@@ -241,37 +239,37 @@ Token lex_next(Lexer *l)
     else if (isalpha(c) || c == '_')
         return lex_ident(l);
 
-    const char *start = l->source->content + l->pos;
+    const char *loc = l->source->content + l->pos;
     advance(l); // skip c
 
     switch (c) {
     case '(':
-        return make_token(l, TOK_LPAREN, start, 1);
+        return make_token(l, TOK_LPAREN, loc, 1);
     case ')':
-        return make_token(l, TOK_RPAREN, start, 1);
+        return make_token(l, TOK_RPAREN, loc, 1);
     case '{':
-        return make_token(l, TOK_LBRACE, start, 1);
+        return make_token(l, TOK_LBRACE, loc, 1);
     case '}':
-        return make_token(l, TOK_RBRACE, start, 1);
+        return make_token(l, TOK_RBRACE, loc, 1);
     case '[':
-        return make_token(l, TOK_LBRACKET, start, 1);
+        return make_token(l, TOK_LBRACKET, loc, 1);
     case ']':
-        return make_token(l, TOK_RBRACKET, start, 1);
+        return make_token(l, TOK_RBRACKET, loc, 1);
     case ',':
-        return make_token(l, TOK_COMMA, start, 1);
+        return make_token(l, TOK_COMMA, loc, 1);
     case '+':
-        return make_token(l, TOK_PLUS, start, 1);
+        return make_token(l, TOK_PLUS, loc, 1);
     case '-':
-        return make_token(l, TOK_MINUS, start, 1);
+        return make_token(l, TOK_MINUS, loc, 1);
     case '*':
-        return make_token(l, TOK_STAR, start, 1);
+        return make_token(l, TOK_STAR, loc, 1);
     case '/':
-        return make_token(l, TOK_SLASH, start, 1);
+        return make_token(l, TOK_SLASH, loc, 1);
     case '%':
-        return make_token(l, TOK_PERCENT, start, 1);
+        return make_token(l, TOK_PERCENT, loc, 1);
     }
 
-    error_at(l, start, "Unexpected character");
+    error_at(l, loc, "Unexpected character");
 }
 
 void lex_init(Lexer *l, File *file)
@@ -304,11 +302,10 @@ Token *lex_tokenize(Lexer *l, int *count)
     return tokens;
 }
 
-// Print array of tokens for debugging
 // will not removed, use macro instead
 #ifndef NDEBUG
 void print_tokens(Token *tokens, int count)
-{
+{ // Print array of tokens for debugging
     int top_line = 1; // biggest line
     for (int i = 0; i < count; i++) {
         if (tokens[i].line > top_line) {
@@ -316,7 +313,7 @@ void print_tokens(Token *tokens, int count)
             printf("%s:%d\n", tokens[i].source->name, top_line);
         }
         printf("  %-12s '%.*s'\n", token_type_name(tokens[i].type), (int)tokens[i].length,
-            tokens[i].start);
+            tokens[i].loc);
     }
 }
 #endif

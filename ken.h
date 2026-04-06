@@ -87,8 +87,8 @@ typedef enum {
 typedef struct {
     File *source;       // Source information
     TokenType type;     // Token kind
-    const char *start;  // Where the token starts
-    size_t length;      // How much length on starts
+    const char *loc;    // Where the token located 
+    size_t length;      // How much length on location 
     int line, col;      // Line:column
 } Token;
 
