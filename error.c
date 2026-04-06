@@ -7,6 +7,7 @@ noreturn void error(const char *fmt, ...)
     fprintf(stderr, "%s: ", ken_progname);
     vfprintf(stderr, fmt, ap);
     fprintf(stderr, "\n");
+    va_end(ap);
     exit(1);
 }
 
@@ -40,6 +41,16 @@ static void verror_tok(Token *tok, const char *fmt, va_list ap)
         fprintf(stderr, "^");
 
     fprintf(stderr, "\n");
+}
+
+void error_tok(Token *tok, const char *fmt, ...)
+{ // print error when tokens is ready
+  // commonly used by parser/semantic analysis
+
+    va_list ap;
+    va_start(ap, fmt);
+    verror_tok(tok, fmt, ap);
+    va_end(ap);
 }
 
 noreturn void error_at(Lexer *l, const char *loc, const char *fmt, ...)
