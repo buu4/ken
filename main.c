@@ -14,7 +14,7 @@ int main(int argc, char **argv)
     file_init(&file, argv[1]);
     lex_init(&lexer, &file);
 
-    int count; // total tokens
+    int count;
     Token *tokens = lex_tokenize(&lexer, &count);
 
     print_tokens(tokens, count);

@@ -1,10 +1,7 @@
 #ifndef _KEN_COMPILER_H
 #define _KEN_COMPILER_H
 
-#ifndef _WIN32
-# define _POSIX_C_SOURCE 200809L
-#endif
-
+#define _POSIX_C_SOURCE 200809L
 #include <assert.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -17,13 +14,12 @@
 #include <errno.h>
 
 #define noreturn _Noreturn
-
-noreturn void error(const char *fmt, ...);
+#define public // Indicate extern
 
 #define unreachable() \
   error("internal error at %s:%d", __FILE__, __LINE__)
-#define public // mark to indicate is defined as extern at first
 
+noreturn void error(const char *fmt, ...);
 extern char *ken_progname;
 
 //
@@ -31,13 +27,12 @@ extern char *ken_progname;
 //
 
 typedef struct {
-    FILE *d;        // file descriptor
+    FILE *d;
     char *name;
     char *content;
     size_t length;
 } File;
 
-// Functions
 void file_init(File *file, char *path);
 void file_close(File *file);
 
@@ -50,7 +45,7 @@ typedef enum {
     TOK_INT_LIT,
     TOK_FLOAT_LIT,
     TOK_STR_LIT,
-    TOK_IDENT,  // identifier
+    TOK_IDENT,
 
     // Keyword
     TOK_FUNC,
@@ -80,10 +75,7 @@ typedef enum {
     TOK_RBRACKET, // ]
     TOK_COMMA, // ,
     
-    // End of file
     TOK_EOF,
-
-    // Error
     TOK_ERR,
 } TokenType;
 
@@ -101,17 +93,16 @@ typedef struct {
     int line, col;
 } Lexer;
 
-// Functions
-void error_tok(Token *tok, const char *fmt, ...); // Multi, no die.
-
+void error_tok(Token *tok, const char *fmt, ...);
 void lex_init(Lexer *l, File *file);
 Token lex_next(Lexer *l);
 
 // Tokenize Lexer and return list of token & token count
 Token *lex_tokenize(Lexer *l, int *count);
-// return the string name of token type
+
 const char *token_type_name(TokenType type);
-// debug functions for lexer
+
+// will not removed, use macro instead
 #ifndef NDEBUG
 void print_tokens(Token *tokens, int count);
 # else

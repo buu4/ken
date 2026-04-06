@@ -119,6 +119,9 @@ static char peek_next(Lexer *l)
 
 static char advance(Lexer *l)
 {
+    assert(l->col > 0);
+    assert(l->line > 0);
+
     char c = l->source->content[l->pos++];
     if (c == '\n') {
         l->line++;
@@ -303,7 +306,6 @@ Token *lex_tokenize(Lexer *l, int *count)
     return tokens;
 }
 
-// will not removed, use macro instead
 #ifndef NDEBUG
 void print_tokens(Token *tokens, int count)
 { // Print array of tokens for debugging
