@@ -1,7 +1,7 @@
 TARGET=ken
 CFLAGS=-std=c11 -g -fno-common -Wall
 
-SRCS=main.c lex.c hashmap.c file.c
+SRCS=main.c lex.c hashmap.c file.c error.c
 OBJS=$(SRCS:.c=.o)
 
 $(TARGET): $(OBJS)

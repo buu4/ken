@@ -16,11 +16,21 @@
 #define noreturn _Noreturn
 #define public // Indicate extern
 
-#define unreachable() \
-  error("internal error at %s:%d", __FILE__, __LINE__)
+extern char *ken_progname;
+
+typedef struct Lexer Lexer;
+typedef struct Token Token;
+
+//
+// error.c
+//
 
 noreturn void error(const char *fmt, ...);
-extern char *ken_progname;
+noreturn void error_at(Lexer *l, const char *loc, const char *fmt, ...);
+void error_tok(Token *tok, const char *fmt, ...);
+
+#define unreachable() \
+  error("internal error at %s:%d", __FILE__, __LINE__)
 
 //
 // file.c
@@ -79,21 +89,20 @@ typedef enum {
     TOK_ERR,
 } TokenType;
 
-typedef struct {
+struct Token {
     File *source;       // Source information
     TokenType type;     // Token kind
     const char *loc;    // Where the token located 
     size_t length;      // How much length on location 
     int line, col;      // Line:column
-} Token;
+};
 
-typedef struct {
+struct Lexer {
     File *source;
     size_t pos;
     int line, col;
-} Lexer;
+};
 
-void error_tok(Token *tok, const char *fmt, ...);
 void lex_init(Lexer *l, File *file);
 Token lex_next(Lexer *l);
 
