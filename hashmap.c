@@ -1,22 +1,21 @@
-// Original source: https://github.com/rui314/chibicc (Rui Ueyama)
-// Modified by Bayu Setiawan (2026). Used in this project.
-//      https://github.com/buu4/ken
+// Based on rui314/chibicc
+
+// This file contains implementation of hashmap in c
+// for faster search; because mostly an programmming language doing thousand/million/billion
+// a check when compiling program
 
 #include "ken.h"
 
-// Initial hash bucket size
 #define INIT_SIZE 16
-
-// Rehash if the usage exceeds 70%.
-#define HIGH_WATERMARK 70
-
-// We'll keep the usage below 50% after rehashing.
-#define LOW_WATERMARK 50
+#define HIGH_WATERMARK 70// Rehash if the usage exceeds 70%.
+#define LOW_WATERMARK 50// We'll keep the usage below 50% after rehashing.
 
 // Represents a deleted hash entry
 #define TOMBSTONE ((void *)-1)
 
-static uint64_t fnv_hash(char *s, int len) {
+static uint64_t fnv_hash(char *s, int len)
+{ // create hash from the given string
+
     uint64_t hash = 0xcbf29ce484222325;
     for (int i = 0; i < len; i++) {
         hash *= 0x100000001b3;
@@ -25,9 +24,10 @@ static uint64_t fnv_hash(char *s, int len) {
     return hash;
 }
 
-// Make room for new entires in a given hashmap by removing
-// tombstones and possibly extending the bucket size.
-static void rehash(HashMap *map) {
+static void rehash(HashMap *map)
+{ // Make room for new entires in a given hashmap by removing
+  // tombstones and possibly extending the bucket size.
+
     // Compute the size of the new hashmap.
     int nkeys = 0;
     for (int i = 0; i < map->capacity; i++)
@@ -54,12 +54,14 @@ static void rehash(HashMap *map) {
     *map = map2;
 }
 
-static bool match(HashEntry *ent, char *key, int keylen) {
+static bool match(HashEntry *ent, char *key, int keylen)
+{
     return ent->key && ent->key != TOMBSTONE &&
         ent->keylen == keylen && memcmp(ent->key, key, keylen) == 0;
 }
 
-static HashEntry *get_entry(HashMap *map, char *key, int keylen) {
+static HashEntry *get_entry(HashMap *map, char *key, int keylen)
+{
     if (!map->buckets)
         return NULL;
 
@@ -75,7 +77,8 @@ static HashEntry *get_entry(HashMap *map, char *key, int keylen) {
     unreachable();
 }
 
-static HashEntry *get_or_insert_entry(HashMap *map, char *key, int keylen) {
+static HashEntry *get_or_insert_entry(HashMap *map, char *key, int keylen)
+{
     if (!map->buckets) {
         map->buckets = calloc(INIT_SIZE, sizeof(HashEntry));
         map->capacity = INIT_SIZE;
@@ -107,29 +110,35 @@ static HashEntry *get_or_insert_entry(HashMap *map, char *key, int keylen) {
     unreachable();
 }
 
-void *hashmap_get(HashMap *map, char *key) {
+void *hashmap_get(HashMap *map, char *key)
+{
     return hashmap_get2(map, key, strlen(key));
 }
 
-void *hashmap_get2(HashMap *map, char *key, int keylen) {
+void *hashmap_get2(HashMap *map, char *key, int keylen)
+{
     HashEntry *ent = get_entry(map, key, keylen);
     return ent ? ent->val : NULL;
 }
 
-void hashmap_put(HashMap *map, char *key, void *val) {
+void hashmap_put(HashMap *map, char *key, void *val)
+{
     hashmap_put2(map, key, strlen(key), val);
 }
 
-void hashmap_put2(HashMap *map, char *key, int keylen, void *val) {
+void hashmap_put2(HashMap *map, char *key, int keylen, void *val)
+{
     HashEntry *ent = get_or_insert_entry(map, key, keylen);
     ent->val = val;
 }
 
-void hashmap_delete(HashMap *map, char *key) {
+void hashmap_delete(HashMap *map, char *key)
+{
     hashmap_delete2(map, key, strlen(key));
 }
 
-void hashmap_delete2(HashMap *map, char *key, int keylen) {
+void hashmap_delete2(HashMap *map, char *key, int keylen)
+{
     HashEntry *ent = get_entry(map, key, keylen);
     if (ent)
         ent->key = TOMBSTONE;
