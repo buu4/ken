@@ -70,9 +70,12 @@ static void skip_whitespace(Lexer *l)
             // skip /*
             advance(l);
             advance(l);
-            while (l->pos < l->source->length && (peek(l) != '*' &&
-                        peek_next(l) != '/'))
+            while (l->pos < l->source->length)
+            {
+                if (peek(l) == '*' && peek_next(l) == '/')
+                    break;
                 advance(l);
+            }
             // skip */
             advance(l);
             advance(l);
