@@ -85,17 +85,23 @@ static void skip_whitespace(Lexer *l)
 static Token lex_number(Lexer *l)
 {
     const char *loc = l->source->content + l->pos;
+    TokenType result_type = TOK_INT_LIT;
 
-    while (isdigit(peek(l)) || (peek(l) == '_' && isdigit(peek_next(l)))) {
-        advance(l);
-    }
-    // Check float
-    for (const char *p = loc; p < (l->source->content + l->pos); p++) {
-        if (*p == '.')
-            return make_token(l, TOK_FLOAT_LIT, loc, (size_t)((l->source->content + l->pos) - loc));
+    while (l->pos < l->source->length) {
+        // Allows 1_100
+        while (isdigit(peek(l)) || (peek(l) == '_' && isdigit(peek_next(l)))) {
+            advance(l);
+        }
+        // Check float
+        if (peek(l) == '.') {
+            advance(l); // skip . dot
+            result_type = TOK_FLOAT_LIT;
+            continue;
+        }
+        break;
     }
 
-    return make_token(l, TOK_INT_LIT, loc, (size_t)((l->source->content + l->pos) - loc));
+    return make_token(l, result_type, loc, (size_t)((l->source->content + l->pos) - loc));
 }
 
 static Token lex_string(Lexer *l)
