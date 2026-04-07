@@ -184,6 +184,8 @@ Token lex_next(Lexer *l)
         return make_token(l, TOK_LBRACKET, loc, 1);
     case ']':
         return make_token(l, TOK_RBRACKET, loc, 1);
+    case '.':
+        return make_token(l, TOK_DOT, loc, 1);
     case ',':
         return make_token(l, TOK_COMMA, loc, 1);
     case '+':
@@ -271,6 +273,7 @@ const char *token_type_name(TokenType type) {
     case TOK_RBRACE: return "RBRACE";
     case TOK_LBRACKET: return "LBRACE";
     case TOK_RBRACKET: return "RBRACE";
+    case TOK_DOT: return "DOT";
     case TOK_COMMA: return "COMMA";
     case TOK_EOF: return "EOF";
     case TOK_ERR: return "ERR";

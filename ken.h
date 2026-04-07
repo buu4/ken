@@ -83,6 +83,7 @@ typedef enum {
     TOK_RBRACE, // }
     TOK_LBRACKET, // [
     TOK_RBRACKET, // ]
+    TOK_DOT, // .
     TOK_COMMA, // ,
     
     TOK_EOF,
