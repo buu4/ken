@@ -85,6 +85,28 @@ static void skip_whitespace(Lexer *l)
     }
 }
 
+static void canonicalize_newline(char *p)
+{ // Replaces \r or \r\n to \n
+  // Swaping method; i = view, j = replacer
+    int i = 0, j = 0;
+
+    while (p[i])
+    {
+        if (p[i] == '\r') {
+            if (p[i + 1] == '\n')
+                i += 2;
+            else
+                i++;
+        
+            p[j++] = '\n';
+        } else {
+            p[j++] = p[i++];
+        }
+    }
+
+    p[j] = '\0';
+}
+
 static Token lex_number(Lexer *l)
 {
     const char *loc = l->source->content + l->pos;
@@ -221,6 +243,11 @@ void lex_init(Lexer *l, File *file)
 
 Token *lex_tokenize(Lexer *l, int *count)
 {
+    canonicalize_newline(l->source->content);
+// update the source length including null terminator
+// because we have modified it in canonicalize newline
+    l->source->length = strlen(l->source->content);
+
     size_t cap = 256;
     int n = 0;
     Token *tokens = malloc(sizeof(Token) * cap);
