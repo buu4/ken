@@ -241,7 +241,7 @@ Token *lex_tokenize(Lexer *l, int *count)
 #ifndef NDEBUG
 void print_tokens(Token *tokens, int count)
 { // Print array of tokens for debugging
-    int top_line = 1; // biggest line
+    int top_line = 0; // biggest line
     for (int i = 0; i < count; i++) {
         if (tokens[i].line > top_line) {
             top_line = tokens[i].line;
