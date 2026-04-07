@@ -100,14 +100,13 @@ static Token lex_number(Lexer *l)
 
 static Token lex_string(Lexer *l)
 {
-    advance(l); // skip opening "
     const char *loc = l->source->content + l->pos;
+    advance(l); // skip opening "
 
     while (l->pos < l->source->length) {
         if (peek(l) == '"') {
             advance(l); // skip closing "
-            // ignore closing "
-            return make_token(l, TOK_STR_LIT, loc, (size_t)((l->source->content + l->pos) - loc) - 1);
+            return make_token(l, TOK_STR_LIT, loc, (size_t)((l->source->content + l->pos) - loc));
         }
         advance(l);
     }
@@ -252,7 +251,7 @@ const char *token_type_name(TokenType type) {
     switch (type) {
     case TOK_INT_LIT: return "INT_LIT";
     case TOK_FLOAT_LIT: return "FLOAT_LIT";
-    case TOK_STR_LIT: return "FLOAT_LIT";
+    case TOK_STR_LIT: return "STR_LIT";
     case TOK_IDENT: return "IDENT";
     case TOK_FUNC: return "FUNC";
     case TOK_LET: return "LET";
@@ -271,8 +270,8 @@ const char *token_type_name(TokenType type) {
     case TOK_RPAREN: return "RPAREN";
     case TOK_LBRACE: return "LBRACE";
     case TOK_RBRACE: return "RBRACE";
-    case TOK_LBRACKET: return "LBRACE";
-    case TOK_RBRACKET: return "RBRACE";
+    case TOK_LBRACKET: return "LBRACKET";
+    case TOK_RBRACKET: return "RBRACKET";
     case TOK_DOT: return "DOT";
     case TOK_COMMA: return "COMMA";
     case TOK_EOF: return "EOF";
