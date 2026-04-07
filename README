@@ -3,21 +3,24 @@ Ken Programming Language
 
 Ken transpile to portable C11 code. The transpiler is written in C and is currently in early development. Do not use this in production.
 
-The purpose of creating Ken is to code simple but fast like C & Safe like rust (probably).
+Our goal of creating this Programming is to code safety but the syntax is probably similar with C or HolyC
 
-example code
-------------
+Code sample
+-----------
 
-Hello world:
-  func main() -> void {
-      let a = "Hello, World!";
-      println!(a);
-  }
+This is our main goal of how the Ken programming language syntax is
 
-String Interpolation:
-  func greet(name: str) -> void {
-      println!("Hello {name}!");
-  }
+I8 main()
+{
+    println("Hello world");
+    return 0;
+}
+
+str greet(str name)
+{
+    print(name);
+    println(" is a good person");
+}
 
 Status
 ======
