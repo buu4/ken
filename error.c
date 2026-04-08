@@ -68,7 +68,7 @@ noreturn void error_at(Lexer *l, const char *loc, const char *fmt, ...)
         start--;
 
     Token char_tok = (Token){
-        .type = TOK_ERR,
+        .kind = TOK_ERR,
         .source = l->source,
         .loc = loc,
         .length = 1,

@@ -1,6 +1,6 @@
 #include "ken.h"
 
-static Token make_token(Lexer *l, TokenType type, const char *loc, size_t len)
+static Token make_token(Lexer *l, TokenKind kind, const char *loc, size_t len)
 {
     int line_no = 1;
     const char *p;
@@ -15,7 +15,7 @@ static Token make_token(Lexer *l, TokenType type, const char *loc, size_t len)
 
     return (Token){
         .source = l->source,
-        .type = type,
+        .kind = kind,
         .loc = loc,
         .length = len,
         .line = line_no,
@@ -110,7 +110,7 @@ static void canonicalize_newline(char *p)
 static Token lex_number(Lexer *l)
 {
     const char *loc = l->source->content + l->pos;
-    TokenType result_type = TOK_INT_LIT;
+    TokenKind result_kind = TOK_INT_LIT;
 
     while (l->pos < l->source->length) {
         // Allows 1_100
@@ -120,13 +120,13 @@ static Token lex_number(Lexer *l)
         // Check float
         if (peek(l) == '.') {
             advance(l); // skip . dot
-            result_type = TOK_FLOAT_LIT;
+            result_kind = TOK_FLOAT_LIT;
             continue;
         }
         break;
     }
 
-    return make_token(l, result_type, loc, (size_t)((l->source->content + l->pos) - loc));
+    return make_token(l, result_kind, loc, (size_t)((l->source->content + l->pos) - loc));
 }
 
 static Token lex_string(Lexer *l)
@@ -148,7 +148,7 @@ static Token lex_string(Lexer *l)
 typedef struct {
     char *kw;
     size_t kw_len;
-    TokenType type;
+    TokenKind kind;
 } kwMap;
 
 static void *check_kw(char *name, size_t len)
@@ -178,9 +178,9 @@ static Token lex_ident(Lexer *l)
 
     size_t len = (size_t)((l->source->content + l->pos) - loc);
     kwMap *kw = (kwMap*)check_kw(loc, len);
-    TokenType type = kw ? kw->type : TOK_IDENT;
+    TokenKind kind = kw ? kw->kind : TOK_IDENT;
 
-    return make_token(l, type, loc, len);
+    return make_token(l, kind, loc, len);
 }
 
 Token lex_next(Lexer *l)
@@ -269,7 +269,7 @@ Token *lex_tokenize(Lexer *l, int *count)
             tokens = realloc(tokens, sizeof(Token) * cap);
         }
         tokens[n] = lex_next(l);
-        if (tokens[n].type == TOK_EOF) {
+        if (tokens[n].kind == TOK_EOF) {
             n++;
             break;
         }
@@ -288,14 +288,14 @@ void print_tokens(Token *tokens, int count)
             top_line = tokens[i].line;
             printf("%s:%d\n", tokens[i].source->name, top_line);
         }
-        printf("  %-12s '%.*s'\n", token_type_name(tokens[i].type), (int)tokens[i].length,
+        printf("  %-12s '%.*s'\n", token_kind_name(tokens[i].kind), (int)tokens[i].length,
             tokens[i].loc);
     }
 }
 #endif
 
-const char *token_type_name(TokenType type) {
-    switch (type) {
+const char *token_kind_name(TokenKind kind) {
+    switch (kind) {
     case TOK_INT_LIT: return "INT_LIT";
     case TOK_FLOAT_LIT: return "FLOAT_LIT";
     case TOK_STR_LIT: return "STR_LIT";

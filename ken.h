@@ -88,11 +88,11 @@ typedef enum {
     
     TOK_EOF,
     TOK_ERR,
-} TokenType;
+} TokenKind;
 
 struct Token {
     File *source;       // Source information
-    TokenType type;     // Token kind
+    TokenKind kind;     // Token kind
     const char *loc;    // Where the token located 
     size_t length;      // How much length on location 
     int line, col;      // Line:column
@@ -110,7 +110,7 @@ Token lex_next(Lexer *l);
 // Tokenize Lexer and return list of token & token count
 Token *lex_tokenize(Lexer *l, int *count);
 
-const char *token_type_name(TokenType type);
+const char *token_kind_name(TokenKind kind);
 
 // will not removed, use macro instead
 #ifndef NDEBUG
