@@ -243,6 +243,10 @@ void lex_init(Lexer *l, File *file)
 
 Token *lex_tokenize(Lexer *l, int *count)
 {
+    assert(l->source);
+    assert(l->source->content);
+    assert(l->source->length);
+
     canonicalize_newline(l->source->content);
 // update the source length including null terminator
 // because we have modified it in canonicalize newline
