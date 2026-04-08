@@ -247,9 +247,16 @@ Token *lex_tokenize(Lexer *l, int *count)
     assert(l->source->content);
     assert(l->source->length);
 
+// UTF-8 texts may start with a 3-byte "BOM" marker sequence.
+// If exists, just skip them because they are useless bytes.
+// (It is actually not recommended to add BOM markers to UTF-8
+// texts, but it's not uncommon particularly on Windows.)
+    if (!memcmp(l->source->content, "\xef\xbb\xbf", 3))
+         l->source->content += 3;
+
     canonicalize_newline(l->source->content);
 // update the source length including null terminator
-// because we have modified it in canonicalize newline
+// because we have been modified the pointer
     l->source->length = strlen(l->source->content);
 
     size_t cap = 256;
